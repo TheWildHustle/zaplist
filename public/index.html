@@ -35,7 +35,7 @@
             color: #ffffff;
             background-color: #444444;
         }
-        #fetchButton, #downloadHtmlBtn, #downloadImageBtn, #downloadAvatarsBtn {
+        #fetchButton, #downloadHtmlBtn, #downloadImageBtn, #downloadAvatarsBtn, #connectWalletBtn {
             background-color: #7921B1;
             color: white;
         }
@@ -147,6 +147,13 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        #walletInfo {
+            display: none;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -209,6 +216,14 @@
         <button id="downloadImageBtn">Download Result as Image</button>
         <button id="downloadAvatarsBtn">Download Avatars as ZIP</button>
 
+        <h2>Nostr Wallet Connect (NIP-47)</h2>
+        <button id="connectWalletBtn">Connect Nostr Wallet</button>
+        <div id="walletInfo">
+            <p>Connected Wallet: <span id="connectedWalletPubkey"></span></p>
+            <p>Balance: <span id="walletBalance"></span> sats</p>
+            <button id="refreshBalanceBtn">Refresh Balance</button>
+        </div>
+
         <h2>Contributing</h2>
         <p>
          New contributors welcome, this is a good micro project to get your feet wet with foss.
@@ -218,5 +233,6 @@
     </main>
 
     <script type="module" src="script.js"></script>
+    <script type="module" src="nostrWalletConnect.js"></script>
 </body>
 </html>
