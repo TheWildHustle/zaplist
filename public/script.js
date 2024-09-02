@@ -1,8 +1,6 @@
 import { SimplePool, nip19 } from 'https://esm.sh/nostr-tools@1.17.0'
-import { NostrWalletConnect } from '@nostrwallet/connect'
 
 const pool = new SimplePool()
-const nostrWallet = new NostrWalletConnect()
 
 let loggedInUser = null
 let zapSendersResults = null
@@ -12,47 +10,11 @@ const corsProxy = "https://corsproxy.io/?"
 
 // ... (keep all existing functions)
 
-async function connectWallet() {
-  try {
-    const pubkey = await nostrWallet.connect()
-    loggedInUser = pubkey
-    updateLoginState()
-    document.getElementById('pubkeyInput').value = pubkey
-    await fetchUserProfile(pubkey)
-    document.getElementById('walletStatus').textContent = 'Connected'
-    document.getElementById('signMessageSection').style.display = 'block'
-  } catch (error) {
-    console.error('Error connecting wallet:', error)
-    alert('Failed to connect wallet. Please try again.')
-  }
-}
-
-async function signMessage() {
-  if (!loggedInUser) {
-    alert('Please connect your wallet first.')
-    return
-  }
-
-  const message = document.getElementById('messageToSign').value
-  if (!message) {
-    alert('Please enter a message to sign.')
-    return
-  }
-
-  try {
-    const signature = await nostrWallet.signMessage(message, loggedInUser)
-    document.getElementById('signedMessage').textContent = `Signature: ${signature}`
-  } catch (error) {
-    console.error('Error signing message:', error)
-    alert('Failed to sign message. Please try again.')
-  }
-}
+// Remove the connectWallet and signMessage functions
 
 // ... (keep all existing event listeners)
 
-// Add new event listeners for wallet connect and sign message
-document.getElementById('connectWalletBtn').addEventListener('click', connectWallet)
-document.getElementById('signMessageBtn').addEventListener('click', signMessage)
+// Remove the new event listeners for wallet connect and sign message
 
 // Initialize login state
 updateLoginState()
