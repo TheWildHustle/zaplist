@@ -1,4 +1,4 @@
-import { SimplePool, nip19 } from 'https://esm.sh/nostr-tools@1.17.0'
+import { SimplePool, nip19, generatePrivateKey, getPublicKey, getEventHash, signEvent } from 'https://esm.sh/nostr-tools@1.17.0'
 
 const pool = new SimplePool()
 
@@ -11,23 +11,38 @@ const corsProxy = "https://corsproxy.io/?"
 // ... (keep all existing functions)
 
 async function connectWallet() {
-  if (typeof window.nostr === 'undefined') {
-    alert('Nostr extension not found. Please install a Nostr-compatible browser extension.')
-    return
+  if (typeof window.nostr !== 'undefined') {
+    try {
+      const pubkey = await window.nostr.getPublicKey()
+      loggedInUser = pubkey
+      updateLoginState()
+      document.getElementById('pubkeyInput').value = pubkey
+      await fetchUserProfile(pubkey)
+      document.getElementById('walletStatus').textContent = 'Connected (Extension)'
+      document.getElementById('signMessageSection').style.display = 'block'
+    } catch (error) {
+      console.error('Error connecting to Nostr extension:', error)
+      alert('Failed to connect to Nostr extension. Falling back to in-browser wallet.')
+      createInBrowserWallet()
+    }
+  } else {
+    alert('Nostr extension not found. Creating in-browser wallet.')
+    createInBrowserWallet()
   }
+}
 
-  try {
-    const pubkey = await window.nostr.getPublicKey()
-    loggedInUser = pubkey
-    updateLoginState()
-    document.getElementById('pubkeyInput').value = pubkey
-    await fetchUserProfile(pubkey)
-    document.getElementById('walletStatus').textContent = 'Connected'
-    document.getElementById('signMessageSection').style.display = 'block'
-  } catch (error) {
-    console.error('Error connecting wallet:', error)
-    alert('Failed to connect wallet. Please try again.')
-  }
+function createInBrowserWallet() {
+  const privateKey = generatePrivateKey()
+  const pubkey = getPublicKey(privateKey)
+  loggedInUser = pubkey
+  updateLoginState()
+  document.getElementById('pubkeyInput').value = pubkey
+  fetchUserProfile(pubkey)
+  document.getElementById('walletStatus').textContent = 'Connected (In-browser)'
+  document.getElementById('signMessageSection').style.display = 'block'
+
+  // Store the private key securely (this is just for demonstration, not recommended for production)
+  sessionStorage.setItem('nostr_private_key', privateKey)
 }
 
 async function signMessage() {
@@ -43,12 +58,30 @@ async function signMessage() {
   }
 
   try {
-    const signature = await window.nostr.signEvent({
-      kind: 1,
-      created_at: Math.floor(Date.now() / 1000),
-      tags: [],
-      content: message
-    })
+    let signature
+    if (typeof window.nostr !== 'undefined') {
+      const event = {
+        kind: 1,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [],
+        content: message
+      }
+      signature = await window.nostr.signEvent(event)
+    } else {
+      const privateKey = sessionStorage.getItem('nostr_private_key')
+      if (!privateKey) {
+        throw new Error('Private key not found')
+      }
+      const event = {
+        kind: 1,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [],
+        content: message,
+        pubkey: loggedInUser
+      }
+      event.id = getEventHash(event)
+      signature = signEvent(event, privateKey)
+    }
     document.getElementById('signedMessage').textContent = `Signature: ${signature}`
   } catch (error) {
     console.error('Error signing message:', error)
