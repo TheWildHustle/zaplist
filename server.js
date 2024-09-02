@@ -2,7 +2,11 @@ const express = require('express')
 const fs = require('fs')
 const path = require('path')
 const sharp = require('sharp')
+const { NostrWalletConnect } = require('@nostrwallet/connect')
 const app = express()
+
+// Initialize Nostr Wallet Connect
+const nostrWallet = new NostrWalletConnect()
 
 // Serve the index.html file at the root URL
 app.get('/', (req, res) => {
@@ -47,6 +51,30 @@ app.post('/save-image', async (req, res) => {
 })
 
 app.use('/imgstash', express.static(path.join(__dirname, 'imgstash')))
+
+// New route for Nostr Wallet Connect
+app.post('/connect-wallet', async (req, res) => {
+  try {
+    const { pubkey } = req.body
+    const connection = await nostrWallet.connect(pubkey)
+    res.json({ success: true, connection })
+  } catch (error) {
+    console.error('Failed to connect wallet:', error)
+    res.status(500).json({ success: false, error: 'Failed to connect wallet' })
+  }
+})
+
+// New route for signing messages
+app.post('/sign-message', async (req, res) => {
+  try {
+    const { message, pubkey } = req.body
+    const signature = await nostrWallet.signMessage(message, pubkey)
+    res.json({ success: true, signature })
+  } catch (error) {
+    console.error('Failed to sign message:', error)
+    res.status(500).json({ success: false, error: 'Failed to sign message' })
+  }
+})
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
