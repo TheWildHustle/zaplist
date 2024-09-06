@@ -48,6 +48,17 @@ app.post('/save-image', async (req, res) => {
 
 app.use('/imgstash', express.static(path.join(__dirname, 'imgstash')))
 
+// New route for creating Lightning invoices
+app.post('/create-invoice', async (req, res) => {
+  const { recipientPubkey, amount } = req.body
+
+  // This is a placeholder. In a real-world scenario, you'd integrate with a Lightning Network node
+  // to generate an actual invoice. For now, we'll return a dummy invoice.
+  const dummyInvoice = `lnbc${amount}n1p3...`
+
+  res.json({ invoice: dummyInvoice })
+})
+
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
