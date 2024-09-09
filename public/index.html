@@ -17,19 +17,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <link rel="preload" href="https://image.nostr.build/56795451a7e9935992b6078f0ee40ea4b0013f8efdf954fb41a3a6a7c33f25a7.png" as="image">
-    <style>
-        /* ... (existing styles) ... */
-        #nwcConnect {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #444444;
-            border-radius: 5px;
-        }
-        #nwcStatus {
-            margin-top: 10px;
-            font-weight: bold;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <main class="container">
@@ -38,11 +26,18 @@
               <li><strong>zaplist.hivetalk.org</strong></li>
             </ul>
             <ul>
-              <li><a href="#" id="loginBtn">Login</a></li>
-              <li><a href="#" id="logoutBtn" style="display: none;">Logout</a></li>
-              <li><a href="https://hivetalk.org/support" id="zap">⚡️ Zap</a></li>
-              <li><a href="https://hivetalk.org">HiveTalk</a></li>
-              <li><a href="https://github.com/hivetalk/zaplist">Github</a></li>
+              <li>
+                <details role="list" dir="rtl">
+                  <summary aria-haspopup="listbox" role="link">Menu</summary>
+                  <ul role="listbox">
+                    <li><a href="#" id="loginBtn">Login</a></li>
+                    <li><a href="#" id="nwcBtn">NWC</a></li>
+                    <li><a href="https://hivetalk.org/support" id="zap">⚡️ Zap</a></li>
+                    <li><a href="https://hivetalk.org">HiveTalk</a></li>
+                    <li><a href="https://github.com/hivetalk/zaplist">Github</a></li>
+                  </ul>
+                </details>
+              </li>
             </ul>
         </nav>
     
@@ -81,13 +76,6 @@
                 </div>
             </div>
         </form>
-
-        <div id="nwcConnect">
-            <h3>Nostr Wallet Connect</h3>
-            <input type="text" id="nwcUriInput" placeholder="Enter NWC URI">
-            <button id="connectNwcBtn">Connect Wallet</button>
-            <div id="nwcStatus"></div>
-        </div>
 
         <div id="results"></div>
         <div id="loadingIndicator">
