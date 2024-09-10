@@ -1,40 +1,51 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-    <!-- ... (keep the existing head content) ... -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaplist</title>
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@1.*/css/pico.min.css">
     <style>
-        /* ... (keep the existing styles) ... */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #ffffff;
+            background-color: #1a1a1a;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #7921B1;
+        }
         .dropdown {
             position: relative;
             display: inline-block;
             float: right;
-            z-index: 1000; /* Ensure the dropdown appears on top */
+            z-index: 1000;
         }
-
         .dropdown-content {
             display: none;
             position: absolute;
             background-color: #222222;
             min-width: 160px;
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1001; /* Ensure the dropdown content appears on top */
+            z-index: 1001;
         }
-
         .dropdown-content a {
             color: white;
             padding: 12px 16px;
             text-decoration: none;
             display: block;
         }
-
         .dropdown-content a:hover {
             background-color: #7921B1;
         }
-
         .dropdown:hover .dropdown-content {
             display: block;
         }
-
         .dropbtn {
             background-color: #7921B1;
             color: white;
@@ -43,13 +54,53 @@
             cursor: pointer;
             border-radius: 5px;
         }
-
         .dropdown:hover .dropbtn {
             background-color: #9B4FD3;
         }
     </style>
 </head>
 <body>
-    <!-- ... (keep the existing body content) ... -->
+    <nav class="container">
+        <ul>
+            <li><strong>Zaplist</strong></li>
+        </ul>
+        <ul>
+            <li>
+                <div class="dropdown">
+                    <button class="dropbtn">Menu</button>
+                    <div class="dropdown-content">
+                        <a href="#home">Home</a>
+                        <a href="#about">About</a>
+                        <a href="#contact">Contact</a>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <h1>Welcome to Zaplist</h1>
+        <p>Zaplist is a simple and efficient task management application.</p>
+        
+        <section id="task-input">
+            <h2>Add a New Task</h2>
+            <form id="task-form">
+                <input type="text" id="task-title" placeholder="Enter task title" required>
+                <textarea id="task-description" placeholder="Enter task description"></textarea>
+                <button type="submit">Add Task</button>
+            </form>
+        </section>
+
+        <section id="task-list">
+            <h2>Your Tasks</h2>
+            <ul id="tasks"></ul>
+        </section>
+    </main>
+
+    <footer class="container">
+        <p>&copy; 2023 Zaplist. All rights reserved.</p>
+    </footer>
+
+    <script src="app.js"></script>
 </body>
 </html>
