@@ -17,27 +17,39 @@ async function connectNWC() {
   if (!connectionUri) return
 
   try {
-    const { pubkey, secret } = nip47.parse(connectionUri)
-    nwcConnection = { pubkey, secret }
+    const parsedUri = nip47.parseConnectionString(connectionUri)
+    nwcConnection = parsedUri
     updateNWCStatus(true)
-    alert('NWC connection successful!')
+    alert('Wallet connected successfully!')
   } catch (error) {
-    console.error('Error connecting to NWC:', error)
-    alert('Failed to connect to NWC. Please check the URI and try again.')
+    console.error('Error connecting wallet:', error)
+    alert('Failed to connect wallet. Please check the URI and try again.')
   }
 }
 
 function promptForNWCUri() {
   return new Promise((resolve) => {
     Swal.fire({
-      title: 'Enter NWC URI',
+      title: 'Connect Wallet',
       input: 'text',
       inputPlaceholder: 'nostr+walletconnect://...',
       showCancelButton: true,
+      confirmButtonText: 'Connect',
+      background: '#333',
+      color: '#fff',
+      customClass: {
+        input: 'swal-input-dark'
+      },
       inputValidator: (value) => {
         if (!value) {
           return 'You need to enter a URI!'
         }
+      },
+      didOpen: () => {
+        const input = Swal.getInput()
+        input.style.color = '#fff'
+        input.style.backgroundColor = '#555'
+        input.style.border = '1px solid #777'
       }
     }).then((result) => {
       if (result.isConfirmed) {
@@ -55,7 +67,7 @@ function updateNWCStatus(isConnected) {
   const disconnectWalletBtn = document.getElementById('disconnectWalletBtn')
 
   if (isConnected) {
-    nwcStatus.textContent = 'NWC Connected'
+    nwcStatus.textContent = 'Wallet Connected'
     nwcStatus.style.display = 'block'
     connectWalletBtn.style.display = 'none'
     disconnectWalletBtn.style.display = 'inline-block'
@@ -69,7 +81,7 @@ function updateNWCStatus(isConnected) {
 function disconnectNWC() {
   nwcConnection = null
   updateNWCStatus(false)
-  alert('NWC disconnected')
+  alert('Wallet disconnected')
 }
 
 // ... (keep all existing code) ...
@@ -87,3 +99,15 @@ document.getElementById('disconnectWalletBtn').addEventListener('click', disconn
 // Initialize login state
 updateLoginState()
 updateNWCStatus(false)
+
+// Add this style to the document head
+const style = document.createElement('style')
+style.textContent = `
+  .swal-input-dark {
+    width: 100% !important;
+    color: #fff !important;
+    background-color: #555 !important;
+    border: 1px solid #777 !important;
+  }
+`
+document.head.appendChild(style)
