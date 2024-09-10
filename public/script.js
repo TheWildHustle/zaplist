@@ -398,10 +398,7 @@ async function fetchUserProfile(pubkey) {
   document.getElementById('userProfile').style.display = 'block'
   document.getElementById('pubkeyInputContainer').style.display = 'none'
 
-  // Set the banner as the background image
-  if (profile.banner) {
-    document.body.style.backgroundImage = `url(${profile.banner})`
-  }
+ 
 }
 
 function updateLoginState() {
