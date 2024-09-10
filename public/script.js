@@ -1,5 +1,5 @@
-import { SimplePool, nip19 } from 'https://esm.sh/nostr-tools@1.17.0'
-import { nip47 } from 'https://esm.sh/nostr-tools@1.17.0'
+import { SimplePool, nip19, generatePrivateKey, getPublicKey, nip04 } from 'https://esm.sh/nostr-tools@1.17.0'
+import NDK from 'https://esm.sh/@nostr-dev-kit/ndk@1.4.2'
 
 const pool = new SimplePool()
 
@@ -10,15 +10,23 @@ let nwcConnection = null
 const defaultAvatar = "https://image.nostr.build/56795451a7e9935992b6078f0ee40ea4b0013f8efdf954fb41a3a6a7c33f25a7.png"
 const corsProxy = "https://corsproxy.io/?"
 
-// ... (keep all existing functions) ...
+// ... (keep existing functions) ...
 
 async function connectNWC() {
   const connectionUri = await promptForNWCUri()
   if (!connectionUri) return
 
   try {
-    const parsedUri = nip47.parseConnectionString(connectionUri)
-    nwcConnection = parsedUri
+    const parsedUri = new URL(connectionUri)
+    const walletPubkey = parsedUri.host
+    const secret = parsedUri.searchParams.get('secret')
+    const relay = parsedUri.searchParams.get('relay')
+
+    if (!walletPubkey || !secret || !relay) {
+      throw new Error('Invalid NWC URI')
+    }
+
+    nwcConnection = { walletPubkey, secret, relay }
     updateNWCStatus(true)
     alert('Wallet connected successfully!')
   } catch (error) {
@@ -84,7 +92,7 @@ function disconnectNWC() {
   alert('Wallet disconnected')
 }
 
-// ... (keep all existing code) ...
+// ... (keep existing code) ...
 
 // Add event listeners to the buttons
 document.getElementById('downloadHtmlBtn').addEventListener('click', downloadHtmlResult)
