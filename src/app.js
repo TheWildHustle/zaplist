@@ -1,48 +1,37 @@
-import { connectWallet, disconnectWallet, payInvoice, getBalance } from './wallet';
+import React, { useEffect, useState } from 'react';
+import { init, Button, PayButton, launchModal, launchPaymentModal, requestProvider } from '@getalby/bitcoin-connect-react';
 
-// ... other imports and existing code ...
+function App() {
+  const [invoice, setInvoice] = useState('');
 
-async function initializeWallet() {
-  const connectionUri = 'nostr+walletconnect://your_pubkey_here?relay=wss://your_relay_here&secret=your_secret_here';
-  try {
-    await connectWallet(connectionUri);
-    console.log('Wallet connected successfully');
-  } catch (error) {
-    console.error('Failed to connect wallet:', error);
-  }
+  useEffect(() => {
+    // Initialize Bitcoin Connect
+    init({
+      appName: 'Zaplist', // your app name
+    });
+  }, []);
+
+  const handleConnect = async () => {
+    const weblnProvider = await requestProvider();
+    const { preimage } = await weblnProvider.sendPayment('lnbc...');
+    alert('Paid: ' + preimage);
+  };
+
+  const handlePay = async () => {
+    const invoice = 'lnbc...'; // Fetch or set your invoice here
+    setInvoice(invoice);
+    await launchPaymentModal({
+      invoice,
+      onPaid: ({ preimage }) => alert('Paid: ' + preimage),
+    });
+  };
+
+  return (
+    <div className="App">
+      <Button onConnect={handleConnect} />
+      <PayButton invoice={invoice} onClick={handlePay} onPaid={(response) => alert('Paid! ' + response.preimage)} />
+    </div>
+  );
 }
 
-async function handleZap(invoice, amount) {
-  try {
-    const preimage = await payInvoice(invoice, amount);
-    console.log('Zap sent successfully. Preimage:', preimage);
-    // Update UI or perform any other actions after successful zap
-  } catch (error) {
-    console.error('Failed to send zap:', error);
-    // Handle error (e.g., show error message to user)
-  }
-}
-
-async function displayBalance() {
-  try {
-    const balance = await getBalance();
-    console.log('Current balance:', balance);
-    // Update UI to display balance
-  } catch (error) {
-    console.error('Failed to get balance:', error);
-    // Handle error
-  }
-}
-
-// Call this function when your app starts
-initializeWallet();
-
-// Use these functions in your UI handlers
-// For example:
-// document.getElementById('zapButton').addEventListener('click', () => handleZap(invoice, amount));
-// document.getElementById('balanceButton').addEventListener('click', displayBalance);
-
-// Don't forget to disconnect the wallet when the app closes
-window.addEventListener('beforeunload', disconnectWallet);
-
-// ... rest of your existing app code ...
+export default App;
