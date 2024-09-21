@@ -22,7 +22,23 @@
     <link rel="preload" href="https://image.nostr.build/56795451a7e9935992b6078f0ee40ea4b0013f8efdf954fb41a3a6a7c33f25a7.png" as="image">
     
     <style>
+
         
+
+@media only screen and (max-width: 768px) {
+   .dropdown-content {
+        min-width: 100px; /* Adjust the minimum width to fit smaller screens */
+    }
+   .dropdown-content a {
+        padding: 10px; /* Reduce padding to fit smaller screens */
+    }
+}
+        
+.dropdown-content {
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
         body {
             background-color: #333333;
             color: #ffffff;
@@ -191,6 +207,10 @@
             float: right;
             z-index: 1000; /* Ensure the dropdown appears on top */
         }
+        .dropdown {
+    float: right;
+    margin-right: 75px; /* Move the start button 20px to the left */
+}
 
         .dropdown-content {
             display: none;
@@ -201,12 +221,15 @@
             z-index: 1001; /* Ensure the dropdown content appears on top */
         }
 
+        
+        
         .dropdown-content a {
             color: white;
             padding: 12px 16px;
             text-decoration: none;
             display: block;
         }
+        
 
         .dropdown-content a:hover {
             background-color: #7921B1;
@@ -230,6 +253,8 @@
         }
 
 
+        
+
     </style>
 </head>
 <body>
@@ -238,11 +263,11 @@
         <div class="dropdown-content">
           <a href="#" id="loginBtn">Login</a>
           <a href="#" id="logoutBtn" style="display: none;">Logout</a>
-          <a href="#" id="connectWalletBtn">Wallet</a>
-          <a href="https://hivetalk.org/support" id="zap">Support</a>
+          <a href="#" id="walletBtn">Wallet</a>
+          <a href="https://hivetalk.org/support" id="zap">Zap</a>
           <a href="https://hivetalk.org">HiveTalk</a>
           <a href="https://github.com/hivetalk/zaplist">Github</a>
-          <bc-button></bc-button>
+          
 
     <div id="wallet-info" style="display: none;">
         <h2>Wallet Info</h2>
@@ -278,9 +303,9 @@
     </div>
 
     
+    <script src="/static/js/script.js"></script>
+    <script src="/static/js/app.js"></script>
 
-<script src="/static/js/app.js"></script>
-<script src="/static/js/script.js"></script>
         
         </div>
     

@@ -1,11 +1,10 @@
-import { Event, getPublicKey, nip04 } from 'nostr-tools';
-import { relayInit } from 'nostr-tools';
+import { Event, getPublicKey, nip04, relayInit } from 'nostr-tools';
 
 export class NostrWalletConnect {
   private pubkey: string;
   private relay: string;
   private secret: string;
-  private relayInstance: any;
+  private relayInstance: ReturnType<typeof relayInit>;
 
   constructor(connectionUri: string) {
     const url = new URL(connectionUri);
@@ -35,33 +34,42 @@ export class NostrWalletConnect {
   }
 
   private async sendRequest(method: string, params: any): Promise<any> {
-    const content = JSON.stringify({ method, params });
-    const encryptedContent = await nip04.encrypt(this.secret, this.pubkey, content);
-    const event = await this.createEvent(23194, encryptedContent);
-    
-    const pub = this.relayInstance.publish(event);
-    await Promise.race([pub.onOk, pub.onFailed]);
-
-    return new Promise((resolve, reject) => {
-      const sub = this.relayInstance.sub([
-        {
-          kinds: [23195],
-          authors: [this.pubkey],
-          '#e': [event.id],
-        }
+    try {
+      const content = JSON.stringify({ method, params });
+      const encryptedContent = await nip04.encrypt(this.secret, this.pubkey, content);
+      const event = await this.createEvent(23194, encryptedContent);
+      
+      const pub = this.relayInstance.publish(event);
+      await Promise.race([
+        pub.onOk,
+        pub.onFailed.catch((error) => {
+          throw new Error(`Error publishing event: ${error.message}`);
+        }),
       ]);
 
-      sub.on('event', async (event: Event) => {
-        const decrypted = await nip04.decrypt(this.secret, event.pubkey, event.content);
-        const response = JSON.parse(decrypted);
-        if (response.error) {
-          reject(new Error(response.error.message));
-        } else {
-          resolve(response.result);
-        }
-        sub.unsub();
+      return new Promise((resolve, reject) => {
+        const sub = this.relayInstance.sub([
+          {
+            kinds: [23195],
+            authors: [this.pubkey],
+            '#e': [event.id],
+          }
+        ]);
+
+        sub.on('event', async (event: Event) => {
+          const decrypted = await nip04.decrypt(this.secret, event.pubkey, event.content);
+          const response = JSON.parse(decrypted);
+          if (response.error) {
+            reject(new Error(response.error.message));
+          } else {
+            resolve(response.result);
+          }
+          sub.unsub();
+        });
       });
-    });
+    } catch (error) {
+      throw new Error(`Error sending request: ${error.message}`);
+    }
   }
 
   async payInvoice(invoice: string, amount?: number): Promise<string> {

@@ -1,17 +1,64 @@
-import { connectWallet, disconnectWallet, payInvoice, getBalance } from './wallet';
+import { NostrWalletConnect } from './NostrWalletConnect';
 
-// ... other imports and existing code ...
+// Create an instance of NostrWalletConnect
+const wallet = new NostrWalletConnect('');
 
-async function initializeWallet() {
-  const connectionUri = 'nostr+walletconnect://your_pubkey_here?relay=wss://your_relay_here&secret=your_secret_here';
+// Define connectWallet function
+async function connectWallet(connectionUri: string) {
+  wallet = new NostrWalletConnect(connectionUri);
   try {
-    await connectWallet(connectionUri);
+    await wallet.connect();
     console.log('Wallet connected successfully');
   } catch (error) {
     console.error('Failed to connect wallet:', error);
   }
 }
 
+// Define disconnectWallet function
+async function disconnectWallet() {
+  try {
+    await wallet.disconnect();
+    console.log('Wallet disconnected successfully');
+  } catch (error) {
+    console.error('Failed to disconnect wallet:', error);
+  }
+}
+
+// Define payInvoice function
+async function payInvoice(invoice: string, amount: number) {
+  try {
+    const preimage = await wallet.payInvoice(invoice, amount);
+    console.log('Zap sent successfully. Preimage:', preimage);
+    return preimage;
+  } catch (error) {
+    console.error('Failed to send zap:', error);
+    throw error;
+  }
+}
+
+// Define getBalance function
+async function getBalance() {
+  try {
+    const balance = await wallet.getBalance();
+    console.log('Current balance:', balance);
+    return balance;
+  } catch (error) {
+    console.error('Failed to get balance:', error);
+    throw error;
+  }
+}
+
+
+
+// Use these functions in your UI handlers
+// For example:
+// document.getElementById('zapButton').addEventListener('click', () => handleZap(invoice, amount));
+// document.getElementById('balanceButton').addEventListener('click', displayBalance);
+
+// Don't forget to disconnect the wallet when the app closes
+window.addEventListener('beforeunload', disconnectWallet);
+
+// Define handleZap function
 async function handleZap(invoice: string, amount: number) {
   try {
     const preimage = await payInvoice(invoice, amount);
@@ -23,6 +70,7 @@ async function handleZap(invoice: string, amount: number) {
   }
 }
 
+// Define displayBalance function
 async function displayBalance() {
   try {
     const balance = await getBalance();
@@ -34,15 +82,5 @@ async function displayBalance() {
   }
 }
 
-// Call this function when your app starts
+// Call initializeWallet function
 initializeWallet();
-
-// Use these functions in your UI handlers
-// For example:
-// document.getElementById('zapButton').addEventListener('click', () => handleZap(invoice, amount));
-// document.getElementById('balanceButton').addEventListener('click', displayBalance);
-
-// Don't forget to disconnect the wallet when the app closes
-window.addEventListener('beforeunload', disconnectWallet);
-
-// ... rest of your existing app code ...

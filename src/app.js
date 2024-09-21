@@ -1,39 +1,73 @@
-import React, { useEffect, useState } from 'react';
-import { init, Button, PayButton, launchModal, launchPaymentModal, requestProvider } from '@getalby/bitcoin-connect-react';
+import { init, requestProvider } from 'https://esm.sh/@getalby/bitcoin-connect@3.6.2';
 
-function App() {
-  const [invoice, setInvoice] = useState('');
-
-  useEffect(() => {
-    // Initialize Bitcoin Connect
+document.addEventListener('DOMContentLoaded', () => {
     init({
-      appName: 'Zaplist', // your app name
+        appName: 'Zaplist',
+        filters: ["nwc"],
     });
-  }, []);
 
-  const handleConnect = async () => {
-    const weblnProvider = await requestProvider({
-      useExtension: true, // Ensure the Alby browser extension is used
+    const walletInfo = document.getElementById('wallet-info');
+    const balanceElement = document.getElementById('balance');
+    const paymentSection = document.getElementById('payment-section');
+    const generateInvoiceBtn = document.getElementById('generate-invoice');
+    const amountInput = document.getElementById('amount');
+    const invoiceDisplay = document.getElementById('invoice-display');
+    const invoiceElement = document.getElementById('invoice');
+    const payInvoiceBtn = document.getElementById('pay-invoice');
+    const paymentStatus = document.getElementById('payment-status');
+
+    let webln;
+
+    document.querySelector('bc-button').addEventListener('click', async () => {
+        try {
+            webln = await requestProvider();
+            const info = await webln.getInfo();
+            balanceElement.textContent = info.balance.toString();
+            walletInfo.style.display = 'block';
+            paymentSection.style.display = 'block';
+        } catch (error) {
+            console.error('Failed to connect wallet:', error);
+        }
     });
-    const { preimage } = await weblnProvider.sendPayment('lnbc...');
-    alert('Paid: ' + preimage);
-  };
 
-  const handlePay = async () => {
-    const invoice = 'lnbc...'; // Fetch or set your invoice here
-    setInvoice(invoice);
-    await launchPaymentModal({
-      invoice,
-      onPaid: ({ preimage }) => alert('Paid: ' + preimage),
+    generateInvoiceBtn.addEventListener('click', async () => {
+        const amount = amountInput.value;
+        if (!amount) {
+            alert('Please enter an amount');
+            return;
+        }
+
+        try {
+            const response = await fetch('/generate_invoice', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ amount }),
+            });
+            const data = await response.json();
+            invoiceElement.textContent = data.invoice;
+            invoiceDisplay.style.display = 'block';
+        } catch (error) {
+            console.error('Failed to generate invoice:', error);
+        }
     });
-  };
 
-  return (
-    <div className="App">
-      <Button onConnect={handleConnect} />
-      <PayButton invoice={invoice} onClick={handlePay} onPaid={(response) => alert('Paid! ' + response.preimage)} />
-    </div>
-  );
-}
+    payInvoiceBtn.addEventListener('click', async () => {
+        const invoice = invoiceElement.textContent;
+        if (!invoice) {
+            alert('No invoice to pay');
+            return;
+        }
 
-export default App;
+        try {
+            const result = await webln.sendPayment(invoice);
+            paymentStatus.textContent = `Payment successful! Preimage: ${result.preimage}`;
+            paymentStatus.style.display = 'block';
+        } catch (error) {
+            console.error('Payment failed:', error);
+            paymentStatus.textContent = 'Payment failed: ' + error.message;
+            paymentStatus.style.display = 'block';
+        }
+    });
+});
