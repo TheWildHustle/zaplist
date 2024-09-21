@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+    
 <head>
+    
     <meta charset="UTF-8">
     <meta property="og:title" content="Zaplist">
     <meta property="og:description" content="Generate a grid of who sent you zaps">
@@ -16,8 +18,11 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script type="module" src="https://esm.sh/@getalby/bitcoin-connect@3.6.2"></script>
     <link rel="preload" href="https://image.nostr.build/56795451a7e9935992b6078f0ee40ea4b0013f8efdf954fb41a3a6a7c33f25a7.png" as="image">
+    
     <style>
+        
         body {
             background-color: #333333;
             color: #ffffff;
@@ -181,31 +186,48 @@
             text-decoration: underline;
         }
         .dropdown {
-  position: relative;
-  display: inline-block;
-  float: right; /* Add this line */
-}
+            position: relative;
+            display: inline-block;
+            float: right;
+            z-index: 1000; /* Ensure the dropdown appears on top */
+        }
 
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f1f1f1;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-}
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #222222;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1001; /* Ensure the dropdown content appears on top */
+        }
 
-.dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-}
+        .dropdown-content a {
+            color: white;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
 
-.dropdown-content a:hover {background-color: #ddd;}
+        .dropdown-content a:hover {
+            background-color: #7921B1;
+        }
 
-.dropdown:hover .dropdown-content {display: block;}
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
 
-.dropdown:hover .dropbtn {background-color: #3e8e41;}
+        .dropbtn {
+            background-color: #7921B1;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: #9B4FD3;
+        }
 
 
     </style>
@@ -216,13 +238,49 @@
         <div class="dropdown-content">
           <a href="#" id="loginBtn">Login</a>
           <a href="#" id="logoutBtn" style="display: none;">Logout</a>
-          <a href="#" id="connectWalletBtn">NWC</a>
-          <a href="https://hivetalk.org/support" id="zap">⚡️ Zap</a>
+          <a href="#" id="connectWalletBtn">Wallet</a>
+          <a href="https://hivetalk.org/support" id="zap">Support</a>
           <a href="https://hivetalk.org">HiveTalk</a>
           <a href="https://github.com/hivetalk/zaplist">Github</a>
+          <bc-button></bc-button>
+
+    <div id="wallet-info" style="display: none;">
+        <h2>Wallet Info</h2>
+        <p>Balance: <span id="balance"></span> sats</p>
+    </div>
+
+    <div id="payment-section" style="display: none;">
+        <h2>Generate Invoice</h2>
+        <input type="number" id="amount" placeholder="Amount in sats">
+        <button id="generate-invoice">Generate Invoice</button>
+        <div id="invoice-display" style="display: none;">
+            <h3>Invoice:</h3>
+            <p id="invoice"></p>
+            <button id="pay-invoice">Pay Invoice</button>
+        </div>
+    </div>
+
+    <div id="payment-status" style="display: none;"></div>
+
+    <div id="loadingIndicator" style="display: none;">
+        <div class="spinner"></div>
+        <span>Processing...</span>
+    </div>
+</div>
+          
+          
         </div>
       </div>
+      <div id="userProfile" style="display: none;">
+        <img id="userBanner" alt="User Banner">
+        <h3 id="userName"></h3>
+        <img id="userAvatar" alt="User Avatar">
+    </div>
 
+    
+
+<script src="/static/js/app.js"></script>
+<script src="/static/js/script.js"></script>
         
         </div>
     
@@ -278,7 +336,7 @@
         Readme to find out more.
         </p>
     </main>
-
     <script type="module" src="script.js"></script>
+    
 </body>
 </html>

@@ -1,12 +1,163 @@
-import { SimplePool, nip19 } from 'https://esm.sh/nostr-tools@1.17.0'
+import { SimplePool, nip19, generatePrivateKey, getPublicKey, nip04 } from 'https://esm.sh/nostr-tools@1.17.0'
+import NDK from 'https://esm.sh/@nostr-dev-kit/ndk@1.4.2'
+import { init, requestProvider, launchModal, disconnect } from 'https://esm.sh/@getalby/bitcoin-connect@3.6.2';
+
+const style = document.createElement('style')
+style.textContent = `
+  .swal-input-dark {
+    width: 100% !important;
+    color: #fff !important;
+    background-color: #555 !important;
+    border: 1px solid #777 !important;
+  }
+`
+
+document.addEventListener('DOMContentLoaded', () => {
+  init({
+      appName: 'zaplist',
+      filters: ["nwc"],
+  });
+
+  const connectWalletBtn = document.getElementById('connectWalletBtn');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const userProfile = document.getElementById('userProfile');
+  const userName = document.getElementById('userName');
+  const userAvatar = document.getElementById('userAvatar');
+  const userBanner = document.getElementById('userBanner');
+
+  connectWalletBtn.addEventListener('click', async () => {
+      try {
+          const provider = await requestProvider();
+          const info = await provider.getInfo();
+          console.log('Connected to wallet:', info);
+          updateUIAfterConnection(info);
+      } catch (error) {
+          console.error('Failed to connect wallet:', error);
+      }
+  });
+
+  loginBtn.addEventListener('click', () => {
+      launchModal();
+  });
+
+  logoutBtn.addEventListener('click', async () => {
+      try {
+          await disconnect();
+          updateUIAfterDisconnection();
+      } catch (error) {
+          console.error('Failed to disconnect:', error);
+      }
+  });
+
+  function updateUIAfterConnection(info) {
+      connectWalletBtn.style.display = 'block';
+      loginBtn.style.display = 'block';
+      logoutBtn.style.display = 'block';
+      userProfile.style.display = 'block';
+      userName.textContent = info.alias || 'Anonymous';
+      userAvatar.src = info.avatar || 'https://via.placeholder.com/100';
+      userBanner.src = info.banner || 'https://via.placeholder.com/500x200';
+  }
+
+  function updateUIAfterDisconnection() {
+      connectWalletBtn.style.display = 'block';
+      loginBtn.style.display = 'block';
+      logoutBtn.style.display = 'none';
+      userProfile.style.display = 'none';
+  }
+});
+
+document.head.appendChild(style)
 
 const pool = new SimplePool()
 
 let loggedInUser = null
 let zapSendersResults = null
+let nwcConnection = null
 
 const defaultAvatar = "https://image.nostr.build/56795451a7e9935992b6078f0ee40ea4b0013f8efdf954fb41a3a6a7c33f25a7.png"
 const corsProxy = "https://corsproxy.io/?"
+
+async function connectNWC() {
+  const connectionUri = await promptForNWCUri()
+  if (!connectionUri) return
+
+  try {
+    const parsedUri = new URL(connectionUri)
+    const walletPubkey = parsedUri.host
+    const secret = parsedUri.searchParams.get('secret')
+    const relay = parsedUri.searchParams.get('relay')
+
+    if (!walletPubkey || !secret || !relay) {
+      throw new Error('Invalid NWC URI')
+    }
+
+    nwcConnection = { walletPubkey, secret, relay }
+    updateNWCStatus(true)
+    alert('Wallet connected successfully!')
+  } catch (error) {
+    console.error('Error connecting wallet:', error)
+    alert('Failed to connect wallet. Please check the URI and try again.')
+  }
+}
+
+function promptForNWCUri() {
+  return new Promise((resolve) => {
+    Swal.fire({
+      title: 'Connect Wallet',
+      input: 'text',
+      inputPlaceholder: 'nostr+walletconnect://...',
+      showCancelButton: true,
+      confirmButtonText: 'Connect',
+      background: '#333',
+      color: '#fff',
+      customClass: {
+        input: 'swal-input-dark'
+      },
+      inputValidator: (value) => {
+        if (!value) {
+          return 'You need to enter a URI!'
+        }
+      },
+      didOpen: () => {
+        const input = Swal.getInput()
+        input.style.color = '#fff'
+        input.style.backgroundColor = '#555'
+        input.style.border = '1px solid #777'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        resolve(result.value)
+      } else {
+        resolve(null)
+      }
+    })
+  })
+}
+
+function updateNWCStatus(isConnected) {
+  const nwcStatus = document.getElementById('nwcStatus')
+  const connectWalletBtn = document.getElementById('connectWalletBtn')
+  const disconnectWalletBtn = document.getElementById('disconnectWalletBtn')
+
+  if (isConnected) {
+    nwcStatus.textContent = 'Wallet Connected'
+    nwcStatus.style.display = 'block'
+    connectWalletBtn.style.display = 'none'
+    disconnectWalletBtn.style.display = 'inline-block'
+  } else {
+    nwcStatus.style.display = 'none'
+    connectWalletBtn.style.display = 'inline-block'
+    disconnectWalletBtn.style.display = 'none'
+  }
+}
+
+function disconnectNWC() {
+  nwcConnection = null
+  updateNWCStatus(false)
+  alert('Wallet disconnected')
+}
 
 function convertToHexIfNpub(pubkey) {
   if (pubkey.startsWith('npub')) {
@@ -431,6 +582,10 @@ document.getElementById('downloadAvatarsBtn').addEventListener('click', download
 document.getElementById('fetchButton').addEventListener('click', fetchZapSenders)
 document.getElementById('loginBtn').addEventListener('click', login)
 document.getElementById('logoutBtn').addEventListener('click', logout)
+document.getElementById('connectWalletBtn').addEventListener('click', connectNWC)
+document.getElementById('disconnectWalletBtn').addEventListener('click', disconnectNWC)
+
 
 // Initialize login state
 updateLoginState()
+updateNWCStatus(false)
