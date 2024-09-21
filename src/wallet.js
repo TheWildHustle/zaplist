@@ -29,3 +29,8 @@ export async function getBalance() {
 }
 
 // Add more wallet-related functions as needed
+
+// Ensure wallet is not connected during login
+export function isWalletConnected() {
+  return walletConnect !== null;
+}
