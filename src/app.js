@@ -12,7 +12,9 @@ function App() {
   }, []);
 
   const handleConnect = async () => {
-    const weblnProvider = await requestProvider();
+    const weblnProvider = await requestProvider({
+      useExtension: true, // Ensure the Alby browser extension is used
+    });
     const { preimage } = await weblnProvider.sendPayment('lnbc...');
     alert('Paid: ' + preimage);
   };
