@@ -34,8 +34,10 @@ async function displayBalance() {
   }
 }
 
-// Call this function when your app starts
-initializeWallet();
+// Call this function when your app starts, but not during login
+if (!isLoginProcess) {
+  initializeWallet();
+}
 
 // Use these functions in your UI handlers
 // For example:
