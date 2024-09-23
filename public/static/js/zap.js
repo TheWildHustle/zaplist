@@ -19,8 +19,20 @@ async function sendZap() {
         return;
     }
 
+    const confirmed = await Swal.fire({
+        title: 'Confirm Zap',
+        text: `Are you sure you want to send ${amount} sats to ${document.getElementById('zapRecipient').textContent}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, send zap!',
+        cancelButtonText: 'Cancel'
+    });
+
+    if (!confirmed.isConfirmed) {
+        return;
+    }
+
     try {
-        // Fetch the lightning address for the recipient
         const response = await fetch(`/get-lightning-address/${currentZapRecipient}`);
         if (!response.ok) {
             throw new Error('Failed to fetch lightning address');
@@ -33,26 +45,50 @@ async function sendZap() {
             return;
         }
 
-        // Use the WebLN API to send the payment
         if (typeof window.webln !== 'undefined') {
             await window.webln.enable();
-            await window.webln.sendPayment(lightningAddress, amount);
-            alert('Zap sent successfully!');
+            const result = await window.webln.sendPayment(lightningAddress, amount);
+            Swal.fire('Success!', 'Zap sent successfully!', 'success');
+            updateZapHistory(currentZapRecipient, amount, 'sent');
         } else {
             alert('WebLN not available. Please use a WebLN-enabled browser or extension.');
         }
     } catch (error) {
         console.error('Error sending zap:', error);
-        alert('Failed to send zap. Please try again.');
+        Swal.fire('Error', 'Failed to send zap. Please try again.', 'error');
     }
 
     closeZapModal();
+}
+
+function updateZapHistory(recipient, amount, type) {
+    const zapHistory = JSON.parse(localStorage.getItem('zapHistory') || '[]');
+    zapHistory.unshift({
+        recipient,
+        amount,
+        type,
+        timestamp: new Date().toISOString()
+    });
+    localStorage.setItem('zapHistory', JSON.stringify(zapHistory.slice(0, 50)));
+    displayZapHistory();
+}
+
+function displayZapHistory() {
+    const zapHistory = JSON.parse(localStorage.getItem('zapHistory') || '[]');
+    const historyContainer = document.getElementById('zapHistory');
+    historyContainer.innerHTML = '';
+    zapHistory.forEach(zap => {
+        const zapElement = document.createElement('div');
+        zapElement.textContent = `${zap.type === 'sent' ? 'Sent' : 'Received'} ${zap.amount} sats ${zap.type === 'sent' ? 'to' : 'from'} ${zap.recipient} on ${new Date(zap.timestamp).toLocaleString()}`;
+        historyContainer.appendChild(zapElement);
+    });
 }
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.close-modal').addEventListener('click', closeZapModal);
     document.getElementById('sendZapBtn').addEventListener('click', sendZap);
+    displayZapHistory();
 });
 
 // Expose the showZapModal function globally
