@@ -5,45 +5,17 @@
     <!-- ... (keep existing head content) ... -->
     <style>
         /* ... (keep existing styles) ... */
-        .zap-button {
+        .zap-amount-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .zap-amount-button {
             background-color: #7921B1;
             color: white;
             border: none;
             padding: 5px 10px;
             border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .zap-modal {
-            display: none;
-            position: fixed;
-            z-index: 1002;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
-        .zap-modal-content {
-            background-color: #333333;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 300px;
-            border-radius: 10px;
-        }
-        .close-modal {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .close-modal:hover,
-        .close-modal:focus {
-            color: #fff;
-            text-decoration: none;
             cursor: pointer;
         }
     </style>
@@ -56,7 +28,12 @@
             <span class="close-modal">&times;</span>
             <h2>Send a Zap</h2>
             <p>Recipient: <span id="zapRecipient"></span></p>
-            <input type="number" id="zapAmount" placeholder="Amount in sats" min="1">
+            <div class="zap-amount-buttons">
+                <button class="zap-amount-button" data-amount="100">100 sats</button>
+                <button class="zap-amount-button" data-amount="1000">1000 sats</button>
+                <button class="zap-amount-button" data-amount="5000">5000 sats</button>
+            </div>
+            <input type="number" id="zapAmount" placeholder="Custom amount in sats" min="1">
             <button id="sendZapBtn">Send Zap</button>
         </div>
     </div>
