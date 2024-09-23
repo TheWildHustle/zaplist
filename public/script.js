@@ -1,8 +1,4 @@
-import { SimplePool, nip19, generatePrivateKey, getPublicKey, nip04 } from 'https://esm.sh/nostr-tools@1.17.0'
-import NDK from 'https://esm.sh/@nostr-dev-kit/ndk@1.4.2'
-import { init, requestProvider, launchModal, disconnect } from 'https://esm.sh/@getalby/bitcoin-connect@3.6.2';
-
-// ... (keep existing code)
+// ... (keep existing imports and code)
 
 async function fetchZapSenders() {
   // ... (keep existing code)
@@ -23,6 +19,7 @@ async function fetchZapSenders() {
           <p style="margin: 5px 0; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${sender.name}</p>
         </a>
         <button class="zap-button" onclick="showZapModal('${sender.npub}', '${sender.name}')">Zap</button>
+        <button class="zap-back-button" onclick="zapBack('${sender.npub}', '${sender.name}')">Zap Back</button>
       </div>
     `
     }
@@ -40,17 +37,19 @@ async function fetchZapSenders() {
 
 // ... (keep existing code)
 
-// Add event listeners to the buttons
-document.getElementById('downloadHtmlBtn').addEventListener('click', downloadHtmlResult)
-document.getElementById('downloadImageBtn').addEventListener('click', downloadImageResult)
-document.getElementById('downloadAvatarsBtn').addEventListener('click', downloadAvatars)
-document.getElementById('fetchButton').addEventListener('click', fetchZapSenders)
-document.getElementById('loginBtn').addEventListener('click', login)
-document.getElementById('logoutBtn').addEventListener('click', logout)
-document.getElementById('connectWalletBtn').addEventListener('click', connectNWC)
-document.getElementById('disconnectWalletBtn').addEventListener('click', disconnectNWC)
-
-// Initialize WebLN
-if (typeof window.webln !== 'undefined') {
-  window.webln.enable().catch(console.error);
+// Add this new function for zapping back
+async function zapBack(pubkey, name) {
+  const lastZap = getLastZapFromUser(pubkey);
+  if (lastZap) {
+    showZapModal(pubkey, name, lastZap.amount);
+  } else {
+    alert('No previous zap found from this user.');
+  }
 }
+
+function getLastZapFromUser(pubkey) {
+  const zapHistory = JSON.parse(localStorage.getItem('zapHistory') || '[]');
+  return zapHistory.find(zap => zap.recipient === pubkey && zap.type === 'received');
+}
+
+// ... (keep existing code and event listeners)
